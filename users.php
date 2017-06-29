@@ -19,4 +19,8 @@ class WebSocketUser {
     $this->id = $id;
     $this->socket = $socket;
   }
+  // protected function messageProcessor($id, $message) {
+  //     $message = "We received: $message from user id: $id, now sending back"; 
+  //     return $message;
+  // }
 }

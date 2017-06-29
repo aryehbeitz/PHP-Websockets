@@ -24,7 +24,11 @@ abstract class WebSocketServer {
     socket_listen($this->master,20)                               or die("Failed: socket_listen()");
     $this->sockets['m'] = $this->master;
     $this->stdout("Server started\nListening on: $addr:$port\nMaster socket: ".$this->master);
-
+    $username="test";
+    $password="123321";
+    $db="test";
+    $host="127.0.0.1";
+    $this->link = mysqli_connect($host, $username, $password, $db);
     
   }
 
@@ -40,6 +44,8 @@ abstract class WebSocketServer {
   protected function send($user, $message) {
     if ($user->handshake) {
       $message = $this->frame($message,$user);
+      //mysqli_query($this->link, "INSERT INTO `messages_ws` SET `data`='" . print_r($message, true) . "'");
+      // $message = "listen man";
       $result = @socket_write($user->socket, $message, strlen($message));
     }
     else {
@@ -308,6 +314,8 @@ abstract class WebSocketServer {
   }
 
   protected function frame($message, $user, $messageType='text', $messageContinues=false) {
+    // $message = "hey there:" . $message . print_r($user,true);
+    //here we mess with the message based on the user
     switch ($messageType) {
       case 'continuous':
         $b1 = 0;
@@ -401,7 +409,11 @@ abstract class WebSocketServer {
           $this->disconnect($user->socket);
         } else {
           if ((preg_match('//u', $message)) || ($headers['opcode']==2)) {
-            //$this->stdout("Text msg encoded UTF-8 or Binary msg\n".$message); 
+            //$this->stdout("Text msg encoded UTF-8 or Binary msg\n".$message);
+            $id = $user->id;
+            //here we receive a message and it's user id and we process and return the result
+            // $message = "we received: $message from user id: $id, now sending back"; 
+            $message = $this->messageProcessor($id, $message);
             $this->process($user, $message);
           } else {
             $this->stderr("not UTF-8\n");
@@ -414,7 +426,10 @@ abstract class WebSocketServer {
       $frame_id++;
     }
   }
-
+  abstract protected function messageProcessor($id, $message);
+   // {
+    // return $message;//we will usually override this
+  // }
   protected function calcoffset($headers) {
     $offset = 2;
     if ($headers['hasmask']) {
@@ -431,6 +446,7 @@ abstract class WebSocketServer {
   protected function deframe($message, &$user) {
     //echo $this->strtohex($message);
     $headers = $this->extractHeaders($message);
+    mysqli_query($this->link, "INSERT INTO `messages_ws` SET `data`='" . print_r($headers, true) . "'");
     $pongReply = false;
     $willClose = false;
     switch($headers['opcode']) {
