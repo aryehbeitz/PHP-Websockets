@@ -12,15 +12,15 @@ class WebSocketUser {
 
   public $sendingContinuous = false;
   public $partialMessage = "";
-  
+
   public $hasSentClose = false;
 
   function __construct($id, $socket) {
     $this->id = $id;
     $this->socket = $socket;
   }
-  // protected function messageProcessor($id, $message) {
-  //     $message = "We received: $message from user id: $id, now sending back"; 
-  //     return $message;
-  // }
+  protected function messageProcessor($id, $message) {
+       //$message = "We received: $message from user id: $id, now sending back";
+       //return "Received: " . $message;
+   }
 }
